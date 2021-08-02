@@ -1,0 +1,17 @@
+let devices = await navigator.mediaDevices.enumerateDevices()
+let permissions = {
+	audio: false,
+	video: false
+}
+for(let device in devices){
+	if(device.kind.includes('audioinput')){
+		permissions.audio = true
+		break;
+	}
+}
+for(let device in devices){
+	if(device.kind.includes('videoinput')){
+		permissions.video = true
+		break;
+	}
+}
