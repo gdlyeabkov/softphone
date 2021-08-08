@@ -1,0 +1,243 @@
+Home.vue
+
+<template>
+  <div>
+    <div v-for="socket in ids" :key="socket._id">
+      <p>{{ socket.id }}</p>
+    </div>
+    <video id="myvideo" width="650px;" controls></video>
+    
+  </div>  
+</template>
+<script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+<script>
+import Peer from 'peer'
+export default {
+  name: 'Home',
+  data(){
+    return {
+      id: 1,
+      ids: [],
+      peer: Peer(undefined, {
+        path: '/peerjs',
+        host: 'localhost',
+        port: '3030',
+      }),
+      port : 4000
+    }
+  },
+  components: {
+    
+  },
+  methods: {
+    cleanData(){
+      fetch(`http://localhost:3030/delete/`, {
+        mode: 'cors',
+        method: 'GET'
+      }).then(response => response.body).then(rb  => {
+          const reader = rb.getReader()
+          return new ReadableStream({
+            start(controller) {
+              function push() {
+                reader.read().then( ({done, value}) => {
+                  if (done) {
+                    console.log('done', done);
+                    controller.close();
+                    return;
+                  }
+                  controller.enqueue(value);
+                  console.log(done, value);
+                  push();
+                })
+              }
+              push();
+            }
+          });
+      }).then(stream => {
+        return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+      })
+      .then(result => {
+        console.log(JSON.parse(result))
+        console.log("Почистили")
+      })
+    }
+  },
+  mounted(){
+    document.addEventListener('contextmenu', () => {
+      this.cleanData()  
+    })
+    
+    fetch(`http://localhost:3030/get/`, {
+      mode: 'cors',
+      method: 'GET'
+    }).then(response => response.body).then(rb  => {
+        const reader = rb.getReader()
+        return new ReadableStream({
+          start(controller) {
+            function push() {
+              reader.read().then( ({done, value}) => {
+                if (done) {
+                  console.log('done', done);
+                  controller.close();
+                  return;
+                }
+                controller.enqueue(value);
+                console.log(done, value);
+                push();
+              })
+            }
+            push();
+          }
+        });
+    }).then(stream => {
+        return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+      })
+      .then(result => {
+        console.log(JSON.parse(result))
+        // this.ids = JSON.parse(result).ids
+
+        this.port = JSON.parse(result).port
+        // this.peer = new Peer(undefined, {
+        //   path: '/peerjs',
+        //   host: 'localhost',
+        //   port: '3030',
+        // })
+        this.peer.on('open', (id) => {
+          this.id = id
+          console.log(`peer.onopen ${id}`)
+          
+          // let mycall = this.peer.call('0cb346e2-8365-420d-87ff-dd174c00ae4f', new MediaStream())
+          // console.log(`mycall: ${Object.keys(mycall)}`)
+
+          this.peer.on('call', (call) => {
+            call.answer(new MediaStream())
+            call.on('stream', (userVideoStream) => {
+              console.log(`call.onstream: ${userVideoStream}`)
+            })
+            console.log(`peer.oncall: ${Object.keys(call)}`)
+          fetch(`http://localhost:3030/create/?socketid=${id}`, {
+            mode: 'cors',
+            method: 'GET'
+          }).then(response => response.body).then(rb  => {
+              const reader = rb.getReader()
+              return new ReadableStream({
+                start(controller) {
+                  function push() {
+                    reader.read().then( ({done, value}) => {
+                      if (done) {
+                        console.log('done', done);
+                        controller.close();
+                        return;
+                      }
+                      controller.enqueue(value);
+                      console.log(done, value);
+                      push();
+                    })
+                  }
+                  push();
+                }
+              });
+          }).then(stream => {
+            return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+          })
+          .then(result => {
+            console.log(JSON.parse(result))
+          });
+          })
+        })
+      });
+    }
+  }
+</script>
+--------------------------------
+index.js
+
+const { v4: uuidv4 } = require('uuid')
+const mongoose = require('mongoose')
+const path = require('path')
+const express = require('express')
+const serveStatic = require('serve-static')
+const app = express()
+const server = require('http').Server(app)
+const { ExpressPeerServer } = require('peer')
+const peerServer = ExpressPeerServer(server, {
+    debug: true
+})
+
+app.use('/', serveStatic(path.join(__dirname, '/dist')))
+app.use(express.static('public'))
+app.use('/peerjs', peerServer);
+
+const url = `mongodb+srv://glebClusterUser:glebClusterUserPassword@cluster0.fvfru.mongodb.net/sockets?retryWrites=true&w=majority`;
+
+const connectionParams = {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true 
+}
+
+mongoose.connect(url, connectionParams)
+    .then( () => {
+        console.log('Connected to database ')
+    })
+    .catch( (err) => {
+        console.error(`Error connecting to the database. \n${err}`);
+    })
+
+
+const SocketSchema = new mongoose.Schema({
+    id: String,
+}, { collection : 'mysockets' });
+
+const SocketModel = mongoose.model('SocketModel', SocketSchema);
+
+app.get('/create', (req, res) => {
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    new SocketModel({ id: req.query.socketid }).save(function (err) {
+        if(err) {
+            return res.json({ 'status': 'Error' })
+        }
+        return res.json({ 'status': 'OK' })
+    })
+})
+
+app.get('/get', (req, res) => {
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    let query = SocketModel.find({  })
+    query.exec((err, allSockets) => {
+        if (err){
+            return res.json({ 'status': 'Error', 'ids': [], 'port': port  })
+        }
+        return res.json({ 'status': 'OK', 'ids': allSockets, 'port': port  })
+    })
+})
+
+app.get('/delete', (req, res) => {
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    let query = SocketModel.deleteMany({}, (err) => {
+        if (err){
+            return res.json({ 'status': 'Error'  })
+        }
+        return res.json({ 'status': 'OK' })
+    })
+})
+
+
+const port = process.env.PORT || 3030
+// const port = 4000
+app.listen(port)
