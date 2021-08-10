@@ -17,32 +17,40 @@
   </div>
 </template>
 <script>
-const io = require("socket.io-client")
+import io from 'socket.io-client'
+// const io = require("socket.io-client")
 export default {
   name: 'Home',
   data(){
     return {
       sockets: [],
-      phone: ''
+      phone: '',
+      cursorOfConnection: 0
     }
   },
   components: {
     
   },
+  created(){
+    // const socket = io('/')
+    // this.socket.on('clientsocket', () => {
+    //   console.log('clientsocket')
+    // })
+  },
   methods: {
     goToRoom(socketPhone, phone){
-      this.$router.push({ name: "Home", params: { room: socketPhone }, query: { phone: phone } })
+      this.$router.push({ name: "Home", params: { room: socketPhone }, query: { phone: phone, cursorofconnection: this.cursorOfConnection } })
     }
   },
   mounted(){
-    const socket = io('/')
-    socket.on('clientsocket', () => {
-      console.log('clientsocket')
-    })
-    socket.on('connect', () => {
-      console.log('connect')
-      socket.emit('clientsocket')
-    })
+    // const socket = io()
+    // socket.on('clientsocket', () => {
+    //   console.log('clientsocket')
+    // })
+    // socket.on('connect', () => {
+    //   console.log('connect')
+    //   socket.emit('clientsocket')
+    // })
 
     let phone = '+79254683410'
     if(this.$route.query.phone === undefined || this.$route.query.phone === null){
@@ -79,6 +87,7 @@ export default {
       console.log(JSON.parse(result))
       this.sockets = JSON.parse(result).sockets
       this.phone = JSON.parse(result).phone
+      this.cursorOfConnection = JSON.parse(result).cursorOfConnection
     })
   }
 }

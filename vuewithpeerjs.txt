@@ -58,7 +58,7 @@ export default {
       })
       .then(result => {
         console.log(JSON.parse(result))
-        console.log("Почистили")
+        console.log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")
       })
     }
   },

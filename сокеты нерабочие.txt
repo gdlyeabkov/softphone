@@ -1,0 +1,552 @@
+<template>
+  <div>
+    <div style="display: flex; flex-direction: row; justify-content: center;">
+      <video id="myvideo" width="650px;" controls>
+        
+      </video>
+    </div>
+    <p onclick="requestVideoStream()" style="text-align: center; width: 100%; color: white; font-size: 28px; cursor: pointer; font-weight: bold; text-shadow: 0px 0px 2px black;" class="material-icons">
+      videocam
+    </p>   
+    <span style="cursor: pointer; margin-top: 15px; float: left; font-size: 28px; color: white;" class="material-icons">
+      attach_file
+    </span>
+    <input style="float: left; margin: 10px; display: inline; width: 90%; position: relative; top: 0px; left: 0px; right: 125px; bottom: 0px;" v-model="textarea" class="form-control textarea" name="message"/>
+    <div style="float: left; display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; border-radius: 100%; background-color: aqua; margin-top: 5px;">
+      <label @click="sendMessage()" class="material-icons" for="sendButton" style="font-size: 28px; cursor: pointer; color: white;">
+        send
+      </label>
+    </div>
+  </div>  
+</template>
+<script>
+// const socket = io({
+//   path: "/myownpath"
+// })
+// const socket = io('/')
+const socket = io()
+// import socketio from 'socket.io'
+// import { io } from 'socket.io'
+
+// import { io } from "socket.io-client"
+// const io = require("socket.io-client")
+
+// import Peer from 'peerjs'
+
+var colors = [
+  "primary",
+  "secondary",
+  "success",
+  "danger",
+  "warning",
+  "info",
+  "light",
+  "dark"
+]
+var randomcolor = Math.floor(Math.random() * colors.length)
+var mycolor = colors[randomcolor]
+
+export default {
+  name: 'Home',
+  data(){
+    return {
+      roomId: '',
+      mystream: null,
+      peerId: "#",
+      peerIndex: 0,
+      port: '4000',
+      textarea: '',
+      isSender: false,
+      colors: [
+        "primary",
+        "secondary",
+        "success",
+        "danger",
+        "warning",
+        "info",
+        "light",
+        "dark"
+      ],
+      randomcolor: '',
+      mycolor: ''
+    }
+  },
+  components: {
+    
+  },
+  mounted(){
+      fetch(`http://localhost:4000/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
+        mode: 'cors',
+        method: 'GET'
+      }).then(response => response.body).then(rb  => {
+        const reader = rb.getReader()
+        return new ReadableStream({
+          start(controller) {
+            function push() {
+              reader.read().then( ({done, value}) => {
+                if (done) {
+                  console.log('done', done);
+                  controller.close();
+                  return;
+                }
+                controller.enqueue(value);
+                console.log(done, value);
+                push();
+              })
+            }
+            push();
+          }
+        });
+    }).then(stream => {
+        return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+      })
+      .then(async result => {
+        console.log(JSON.parse(result))     
+        this.randomcolor = Math.floor(Math.random() * this.colors.length)
+        this.mycolor = this.colors[this.randomcolor]
+        // this.cursorOfConnection = JSON.parse(result).cursorOfConnection
+        this.peerIndex = JSON.parse(result).peerIndex
+        this.port =  JSON.parse(result).port
+        this.mystream = null
+        this.peerId = JSON.parse(result).peer
+        
+        this.cursorOfConnection = this.$route.query.cursorofconnection
+        this.roomId = this.$route.params.room
+
+        socket.on("connect", () => {
+          console.log("connect")
+        })
+        
+        // socket.on("disconnect", (reason) => {
+        //   console.log("disconnect")
+        // })
+
+        socket.on("error", (error) => {
+          console.log("error")
+        })
+
+        // const socket = io('/')
+        // socket.on('clientsocket', () => {
+        //   console.log('clientsocket')
+        // })
+        // socket.on('connect', () => {
+        //   console.log('connect')
+        //   socket.emit('clientsocket')
+        // })
+        // socket.on('disconnect', () => {
+        //   console.log('disconnect')
+        // })
+        // socket.on('joined', () => {
+        //   console.log('joined')
+        // })
+        // socket.on('audience', () => {
+        //   console.log('audience')
+        // })
+        // socket.on('end', () => {
+        //   console.log('end')
+        // })
+        // socket.on('welcome', () => {
+        //   console.log('welcome')
+        // })
+        // socket.on('start', () => {
+        //   console.log('start')
+        // })
+        // socket.on('ask', () => {
+        //   console.log('ask')
+        // })
+        // socket.on('results', () => {
+        //   console.log('results')
+        // })
+
+        socket.io.on('sendMessage', (message, color) => {
+          console.log(`sendMessage: ${message}`)
+          let msg = document.createElement('div')
+          let sideOfMsg = this.isSender ? 'left' : 'right'
+          this.isSender = false
+          msg.classList += `btn btn-${color}`
+          msg.style = `
+            text-align: ${sideOfMsg};
+            float: ${sideOfMsg};
+            font-size: 14px;
+            font-weight: bold;
+            clear: both;
+            color: tan;
+            min-width: 40%;
+            min-height: 50px;
+            margin: 5px;
+          `
+          msg.textContent = message
+          document.body.appendChild(msg)
+        })
+
+        var peer = new Peer(undefined, {
+          path: '/peerjs',
+          host: 'localhost',
+          port: this.port,
+        })
+
+        peer.on('open', (id) => {
+          let devices = []
+          let permissions = {
+            audio: false,
+            video: false
+          }
+          navigator.mediaDevices.enumerateDevices().then(listOfDevices => {
+            devices = listOfDevices
+            console.log('listOfDevices: ', listOfDevices)
+            for(let device of devices){
+              console.log('device.kind: ', device.kind)
+              if(device.kind.includes('audioinput')){
+                permissions.audio = true
+                break
+              }
+            }
+            for(let device of devices){
+              if(device.kind.includes('videoinput')){
+                permissions.video = true
+                break
+              }
+            }
+            console.log('permissions: ', permissions)
+            var mycall = null
+            navigator.mediaDevices.getUserMedia(permissions).then((stream) => {
+              if(this.peerIndex === 2){
+                mystream = peer.call(peerId, stream)
+              }
+              window.localStream = stream
+              // console.log(`mycall: ${Object.keys(mycall)}`)
+            }).catch(e => {
+              console.log(`Error: ${e}`)
+            })
+            console.log(`peer.onopen ${id}`)
+            console.log(`port: ${this.port}`)
+          }).catch(e => {
+            console.log(`Error: ${e}`)
+          })
+        })
+
+        peer.on('call', (call) => {
+          call.answer()
+          call.on('stream', (userVideoStream) => {
+            document.querySelector('#myvideo').srcObject = userVideoStream
+            document.querySelector('#myvideo').addEventListener('loadedmetadata', () => {
+              document.querySelector('#myvideo').play()
+            })
+            console.log("call.onstream")
+          })
+        })
+      
+      socket.on('alertMessage', (message) => {
+        console.log(`alertMessage: ${message}`)
+        alert(message)
+      })
+    })
+  },
+  methods: {
+    sendMessage(){
+      this.isSender = true
+      let mainMessage = this.textarea
+
+      fetch(`http://localhost:4000/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
+        mode: 'cors',
+        method: 'GET'
+      }).then(response => response.body).then(rb  => {
+        const reader = rb.getReader()
+        return new ReadableStream({
+          start(controller) {
+            function push() {
+              reader.read().then( ({done, value}) => {
+                if (done) {
+                  console.log('done', done);
+                  controller.close();
+                  return;
+                }
+                controller.enqueue(value);
+                console.log(done, value);
+                push();
+              })
+            }
+            push();
+          }
+        });
+    }).then(stream => {
+        return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+      })
+      .then(async result => {
+        console.log(JSON.parse(result))
+        if(JSON.parse(result).status.includes("OK")){
+          this.textarea = ""
+        } else if(JSON.parse(result).status.includes("Error")){
+          this.$router.push({ name: "sockets", query: { phone: this.phone } })
+        }
+      }).catch(e => {
+        console.log(`Error: ${e}`)
+      })
+    },
+  // sockets:{
+  //   connect: function(){
+  //     console.log('socket connected')
+  //   },
+  //   customEmit: function(val){
+  //     console.log('this method fired by socket server. eg: io.emit("customEmit", data)')
+  //   }
+  // }
+  }
+}
+</script>
+----------------------------------------------------------------------------
+const { v4: uuidv4 } = require('uuid')
+const bcrypt = require('bcrypt')
+const mongoose = require('mongoose')
+const express = require('express')
+const path = require('path')
+const app = express()
+const server = require('http').Server(app)
+const io = require("socket.io")(server)
+const serveStatic = require('serve-static')
+const { ExpressPeerServer } = require('peer')
+const peerServer = ExpressPeerServer(server, {
+    debug: true
+})
+
+var mysocket = null
+var sockets = []
+var rooms = []
+var phones = []
+var cursorOfConnection = -1
+var indexConnection = 0
+var peerIndex = 0
+var lastpeer = ''
+
+peerServer.on('connection', (client) => {
+    console.log(`client: ${client.id}`)  
+    lastpeer = client.id
+})
+
+peerServer.on('disconnect', (client) => {
+    console.log(`client: ${client.id}`)
+})
+app.use('/peerjs', peerServer)
+
+const url = `mongodb+srv://glebClusterUser:glebClusterUserPassword@cluster0.fvfru.mongodb.net/sockets?retryWrites=true&w=majority`;
+
+const connectionParams = {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true 
+}
+
+mongoose.connect(url, connectionParams)
+    .then( () => {
+        console.log('Connected to database ')
+    })
+    .catch( (err) => {
+        console.error(`Error connecting to the database. \n${err}`);
+    })
+
+
+const SocketSchema = new mongoose.Schema({
+    id: String,
+    phone: String
+}, { collection : 'mysockets' });
+
+const SocketModel = mongoose.model('SocketModel', SocketSchema);
+
+app.use('/', [serveStatic(path.join(__dirname, '/dist')),
+    (req, res, next) => {
+        indexConnection = 0
+        io.on('connection', (socket) => {
+            indexConnection++
+            sockets.push(socket)
+            
+            if(0 < indexConnection - 1){
+                sockets.pop()
+            }
+            if(Array.from(socket.rooms).length === indexConnection){
+                console.log(`--------------------------------------`)
+                sockets.map(socket => {
+                    console.log(`sockets.id: ${socket.id}`)
+                })
+                console.log(`--------------------------------------`)
+                // sockets[sockets.length - 1].data.phone = req.params.room
+                socket.on('disconnect', function() {
+                    let indexOfSocket = sockets.indexOf(socket)
+                    sockets.splice(indexOfSocket, 1)
+                    rooms.splice(indexOfSocket, 1)
+                    phones.splice(indexOfSocket, 1)
+                    cursorOfConnection--
+                    console.log(`--------------------------------------`)
+                    sockets.map(socket => {
+                        console.log(`sockets.id: ${socket.id}`)
+                    })
+                    rooms.map((room, roomIndex) => {
+                        console.log(`rooms[${roomIndex}]: ${rooms[roomIndex]}`)
+                    })
+                    console.log(`--------------------------------------`)
+                })
+            }
+        })
+        return next()
+    }
+])
+
+app.get('/sockets', (req, res) => {
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    io.on('connection', (socket) => {
+        console.log("connection")
+    })
+
+    let query = SocketModel.find({  })
+    query.exec((err, allSockets) => {
+        if (err){
+            return res.json({ 'sockets': [], 'phone': req.query.phone  })    
+        }
+        allSockets = allSockets.filter(socket => {
+            return !req.query.phone.includes(socket.phone) 
+        })
+        
+        // return res.json({ 'sockets': allSockets, 'phone': req.query.phone })
+        cursorOfConnection++
+        return res.json({ 'sockets': allSockets, 'phone': req.query.phone, cursorOfConnection: cursorOfConnection })
+
+    })
+})
+
+// const port = process.env.PORT || 4000
+const port = 4000
+
+io.on('connection', (socket) => {
+    console.log("connection")
+})
+
+app.get('/room/:room', (req, res) => {
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
+    peerIndex++
+    phones.push(req.query.phone)
+    rooms.push(req.params.room)
+    // cursorOfConnection++
+    // let query = SocketModel.findOne({ 'phone': req.params.room })
+    // query.exec((err, otherSocket) => {
+    //     if(err) {
+    //         return
+    //     }
+    //     let reqQueryPhone = otherSocket.phone
+    //     io.on('connection', (socket) => {
+    //         indexConnection = 0
+    //         // let reqQueryPhone = otherSocket.phone
+        
+    //         indexConnection++
+    //         sockets.push(socket)
+            
+    //         if(0 < indexConnection - 1){
+    //             sockets.pop()
+    //         }
+    //         if(Array.from(socket.rooms).length === indexConnection){
+    //             console.log(`--------------------------------------`)
+    //             sockets.map(socket => {
+    //                 console.log(`sockets.id: ${socket.id}`)
+    //             })
+    //             console.log(`--------------------------------------`)
+    //             // sockets[sockets.length - 1].data.phone = req.params.room
+    //             socket.on('disconnect', function() {
+    //                 let indexOfSocket = sockets.indexOf(socket)
+    //                 sockets.splice(indexOfSocket, 1)
+    //                 rooms.splice(indexOfSocket, 1)
+    //                 phones.splice(indexOfSocket, 1)
+    //                 cursorOfConnection--
+    //                 console.log(`--------------------------------------`)
+    //                 sockets.map(socket => {
+    //                     console.log(`sockets.id: ${socket.id}`)
+    //                 })
+    //                 rooms.map((room, roomIndex) => {
+    //                     console.log(`rooms[${roomIndex}]: ${rooms[roomIndex]}`)
+    //                 })
+    //                 console.log(`--------------------------------------`)
+    //             })
+    //             SocketModel.updateOne({ phone: reqQueryPhone }, {
+    //                 $set: {
+    //                     "id": sockets[sockets.length - 1].id
+    //                 }
+    //             }, (err, updatedSocket) => {
+    //                 if(err) {
+                        
+    //                 }
+                    
+    //             })
+    //         }
+    //     })
+    
+    // })
+    
+    // return res.json({ roomId: rooms[cursorOfConnection], phone: req.query.phone, cursorOfConnection: cursorOfConnection, port: port, peer: lastpeer, peerindex: peerIndex  })
+    return res.json({ port: port, peer: lastpeer, peerindex: peerIndex  })
+
+})
+
+
+app.get('/send', async (req, res) => {
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
+    console.log(`req.query: ${Object.keys(req.query)}`)
+    console.log(`req.query: ${req.query.message}`)
+    console.log(`req.query: ${req.query.msgcolor}`)
+    console.log(`req.query: ${req.query.phone}`)
+    console.log(`req.query: ${req.query.room}`)
+    console.log(`req.query: ${req.query.cursorofconnection}`)
+    console.log(`req.query.phone: ${req.query.phone}`)
+    console.log(`rooms: ${rooms}`)
+    console.log(`phones: ${phones}`)
+    console.log(`index: ${rooms.findIndex(
+        (el, index, array) => {
+            if(el === req.query.phone){
+                console.log(`el: ${el}`)
+                return true
+            } else if(el !== req.query.phone){
+                return false
+            }
+        }
+    )}`)
+    // io.to(sockets[req.query.cursorofconnection].id).emit('sendMessage', req.query.message, req.query.msgcolor)
+    io.emit('sendMessage', req.query.message, req.query.msgcolor)
+    let idxConnection = rooms.findIndex(
+        (el, index, array) => {
+            if(el === req.query.phone){
+                return true
+            } else if(el !== req.query.phone){
+                return false
+            }
+        }
+    )
+    if(idxConnection >= 0){
+        io.to(sockets[idxConnection].id).emit('sendMessage', req.query.message, req.query.msgcolor)
+    } else if(idxConnection <= -1){
+        let idxAlertConnection = phones.findIndex(
+            (el, index, array) => {
+                if(el === rooms[req.query.cursorofconnection]){
+                    return true
+                } else if(el !== rooms[req.query.cursorofconnection]){
+                    return false
+                }
+            }
+        )
+        console.log(`idxAlertConnection: ${idxAlertConnection}`)
+        io.to(sockets[idxAlertConnection].id).emit('alertMessage', req.query.message)
+    }
+    return res.json({ status: "OK" })
+})
+
+server.listen(port)

@@ -1,0 +1,14 @@
+http://localhost:3030/room/%2079254683410/?phone=%2082336155118
+http://localhost:3030/room/%2082336155118/?phone=%2079254683410
+<script src="/socket.io/socket.io.js"></script>
+http://localhost:4000/?phone=+82336155118
+http://localhost:4000/?phone=%2079254683410
+
+// io.path("/myownpath");
+io.on('connection', (socket) => {
+    console.log('connection')
+    // io.emit('clientsocket')
+    // socket.on('disconnect', function() {
+    //     console.log('disconnect')
+    // })
+})
