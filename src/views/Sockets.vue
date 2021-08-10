@@ -58,7 +58,7 @@ export default {
     } else if(this.$route.query.phone !== undefined && this.$route.query.phone !== null){
       phone = this.$route.query.phone
     }
-    fetch(`http://localhost:4000/sockets/?phone=${phone}`, {
+    fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${phone}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {

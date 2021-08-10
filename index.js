@@ -120,8 +120,8 @@ app.get('/sockets', (req, res) => {
     })
 })
 
-// const port = process.env.PORT || 4000
-const port = 4000
+const port = process.env.PORT || 8080
+// const port = 4000
 
 io.on('connection', (socket) => {
     console.log("connection")

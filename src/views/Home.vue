@@ -109,7 +109,7 @@ export default {
     
   },
   mounted(){
-      fetch(`http://localhost:4000/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
+      fetch(`https://phonesoft.herokuapp.com/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
@@ -148,8 +148,8 @@ export default {
 
         peer = new Peer(undefined, {
           path: '/peerjs',
-          host: 'localhost',
-          port: 4000,
+          host: 'https://phonesoft.herokuapp.com/',
+          port: this.port,
         })
 
         peer.on('open', (id) => {
@@ -205,7 +205,7 @@ export default {
   },
   methods: {
     requestVideoStream(){
-      fetch(`http://localhost:4000/video/?phone=${this.$route.query.phone}`, {
+      fetch(`https://phonesoft.herokuapp.com/video/?phone=${this.$route.query.phone}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
@@ -239,7 +239,7 @@ export default {
       isSender = true
       let mainMessage = this.textarea
 
-      fetch(`http://localhost:4000/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
+      fetch(`https://phonesoft.herokuapp.com/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
