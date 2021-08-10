@@ -8,9 +8,7 @@ const server = require('http').Server(app)
 const io = require("socket.io")(server)
 const serveStatic = require('serve-static')
 const { ExpressPeerServer } = require('peer')
-const peerServer = ExpressPeerServer(server, {
-    debug: true
-})
+const peerServer = ExpressPeerServer(server)
 
 var mysocket = null
 var sockets = []
@@ -128,6 +126,11 @@ io.on('connection', (socket) => {
 })
 
 app.get('/video', async (req, res)=>{
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
     console.log(`req.query.phone: ${req.query.phone}`)
     console.log(`rooms: ${rooms}`)
     console.log(`lastpeer: ${lastpeer}`)

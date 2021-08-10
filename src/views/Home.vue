@@ -146,11 +146,7 @@ export default {
         this.cursorOfConnection = this.$route.query.cursorofconnection
         this.roomId = this.$route.params.room
 
-        peer = new Peer(undefined, {
-          path: '/peerjs',
-          host: 'https://phonesoft.herokuapp.com/',
-          port: this.port,
-        })
+        peer = new Peer(undefined)
 
         peer.on('open', (id) => {
           let devices = []
