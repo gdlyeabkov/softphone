@@ -7,11 +7,18 @@ const app = express()
 const server = require('http').Server(app)
 const io = require("socket.io")(server)
 const serveStatic = require('serve-static')
+
+const cors = require('cors')
+app.use(cors())
+
 const { ExpressPeerServer } = require('peer')
 const peerServer = ExpressPeerServer(server, {
     debug: true,
     allow_discovery: true
-  })
+})
+
+// const PeerServer = require('peer').PeerServer
+
 
 var sockets = []
 var rooms = []
