@@ -68,44 +68,45 @@ export default {
       if(this.$route.query.redirectroute.includes('register') || this.$route.query.redirectroute.includes('socket')){
         this.$router.push({ path: this.$route.query.redirectroute })
       } else if(!this.$route.query.redirectroute.includes('register')){     
-        jwt.verify(this.token, 'phonesoftsecret', (err, decoded) => {
-          if (err) {
-            this.$router.push({ name: "Register" })
-          } else {
-            // fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
-            fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${decoded.phonenumber}`, {
-                mode: 'cors',
-                method: 'GET'
-              }).then(response => response.body).then(rb  => {
-                const reader = rb.getReader()
-                return new ReadableStream({
-                  start(controller) {
-                    function push() {
-                      reader.read().then( ({done, value}) => {
-                        if (done) {
-                          console.log('done', done);
-                          controller.close();
-                          return;
-                        }
-                        controller.enqueue(value);
-                        console.log(done, value);
-                        push();
-                      })
-                    }
-                    push();
-                  }
-                });
-            }).then(stream => {
-              return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-            })
-            .then(async result => {
-              console.log(JSON.parse(result))
-              this.sockets = JSON.parse(result).sockets
-              this.phone = JSON.parse(result).phone
-              this.cursorOfConnection = JSON.parse(result).cursorOfConnection
-            })
-          }
-        })
+        this.$router.push({ name: "Sockets" })
+        // jwt.verify(this.token, 'phonesoftsecret', (err, decoded) => {
+        //   if (err) {
+        //     this.$router.push({ name: "Register" })
+        //   } else {
+        //     // fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
+        //     fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${decoded.phonenumber}`, {
+        //         mode: 'cors',
+        //         method: 'GET'
+        //       }).then(response => response.body).then(rb  => {
+        //         const reader = rb.getReader()
+        //         return new ReadableStream({
+        //           start(controller) {
+        //             function push() {
+        //               reader.read().then( ({done, value}) => {
+        //                 if (done) {
+        //                   console.log('done', done);
+        //                   controller.close();
+        //                   return;
+        //                 }
+        //                 controller.enqueue(value);
+        //                 console.log(done, value);
+        //                 push();
+        //               })
+        //             }
+        //             push();
+        //           }
+        //         });
+        //     }).then(stream => {
+        //       return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+        //     })
+        //     .then(async result => {
+        //       console.log(JSON.parse(result))
+        //       this.sockets = JSON.parse(result).sockets
+        //       this.phone = JSON.parse(result).phone
+        //       this.cursorOfConnection = JSON.parse(result).cursorOfConnection
+        //     })
+        //   }
+        // })
       }
     } else if(this.$route.query.redirectroute === null || this.$route.query.redirectroute === undefined){
       jwt.verify(this.token, 'phonesoftsecret', (err, decoded) => {
