@@ -115,7 +115,7 @@ export default {
         } else { 
           // fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
           fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${decoded.phonenumber}`, {
-              mode: 'same-origin',
+              mode: 'cors',
               method: 'GET'
             }).then(response => response.body).then(rb  => {
               const reader = rb.getReader()

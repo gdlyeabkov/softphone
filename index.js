@@ -9,13 +9,20 @@ const io = require("socket.io")(server)
 const serveStatic = require('serve-static')
 
 const cors = require('cors')
-app.use(cors())
 
 const { ExpressPeerServer } = require('peer')
 const peerServer = ExpressPeerServer(server, {
     debug: true,
-    allow_discovery: true
+    path: '/'
 })
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
+app.use(
+    cors({
+        origin: "https://phonesoft.com",
+        optionsSuccessStatus: 200
+    })
+)
 
 // const PeerServer = require('peer').PeerServer
 
