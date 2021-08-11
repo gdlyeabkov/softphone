@@ -21,7 +21,7 @@ export default {
       let phone = this.phone
       // fetch(`http://localhost:4000/create/?phonenumber=${phone}&socketid=#`, {
       fetch(`https://phonesoft.herokuapp.com/create/?phonenumber=${phone}&socketid=#`, {
-        mode: 'cors',
+        mode: 'same-origin',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
         const reader = rb.getReader()
