@@ -112,11 +112,7 @@ export default {
       // fetch(`http://localhost:4000/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
       fetch(`https://phonesoft.herokuapp.com/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
         mode: 'cors',
-        method: 'GET',
-        headers: {
-          "accept": "application/json",
-          "Access-Control-Allow-Origin":"*"
-        }
+        method: 'GET'
       }).then(response => response.body).then(rb  => {
         const reader = rb.getReader()
         return new ReadableStream({
@@ -214,11 +210,7 @@ export default {
       // fetch(`http://localhost:4000/video/?phone=${this.$route.query.phone}`, {
       fetch(`https://phonesoft.herokuapp.com/video/?phone=${this.$route.query.phone}`, {
         mode: 'cors',
-        method: 'GET',
-        headers: {
-          "accept": "application/json",
-          "Access-Control-Allow-Origin":"*"
-        }
+        method: 'GET'
       }).then(response => response.body).then(rb  => {
         const reader = rb.getReader()
         return new ReadableStream({
@@ -253,11 +245,7 @@ export default {
       // fetch(`http://localhost:4000/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
       fetch(`https://phonesoft.herokuapp.com/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
         mode: 'cors',
-        method: 'GET',
-        headers: {
-          "accept": "application/json",
-          "Access-Control-Allow-Origin":"*"
-        }
+        method: 'GET'
       }).then(response => response.body).then(rb  => {
         const reader = rb.getReader()
         return new ReadableStream({
