@@ -8,9 +8,11 @@ const server = require('http').Server(app)
 const io = require("socket.io")(server)
 const serveStatic = require('serve-static')
 const { ExpressPeerServer } = require('peer')
-const peerServer = ExpressPeerServer(server)
+const peerServer = ExpressPeerServer(server, {
+    debug: true,
+    allow_discovery: true
+  })
 
-var mysocket = null
 var sockets = []
 var rooms = []
 var phones = []
@@ -75,7 +77,18 @@ app.use('/', [serveStatic(path.join(__dirname, '/dist')),
                     sockets.splice(indexOfSocket, 1)
                     rooms.splice(indexOfSocket, 1)
                     phones.splice(indexOfSocket, 1)
-                    cursorOfConnection--
+                    
+                    // cursorOfConnection--
+
+                    if(io.sockets.adapter.rooms.size === 0){
+                        cursorOfConnection = -1
+                        sockets = []
+                        rooms = []
+                        phones = []
+                    }
+                    console.log(`io.sockets.adapter.rooms.size: ${io.sockets.adapter.rooms.size}`)
+                    console.log(`cursorOfConnection: ${cursorOfConnection}`)
+
                     console.log(`--------------------------------------`)
                     sockets.map(socket => {
                         console.log(`sockets.id: ${socket.id}`)
@@ -159,7 +172,13 @@ app.get('/room/:room', (req, res) => {
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     
-    peerIndex++
+    if(peerIndex <= 1){
+        peerIndex++
+    } else if(peerIndex === 2){
+        peerIndex = 0
+    }
+    console.log(`peerIndex: ${peerIndex}`)
+    
     phones.push(req.query.phone)
     rooms.push(req.params.room)
     // cursorOfConnection++
@@ -275,6 +294,32 @@ app.get('/send', async (req, res) => {
         io.to(sockets[idxAlertConnection].id).emit('alertMessage', req.query.message)
     }
     return res.json({ status: "OK" })
+})
+
+app.get('/create', (req, res) => {
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    new SocketModel({ id: req.query.socketid, phone: req.query.phonenumber }).save(function (err) {
+        if(err) {
+            return res.json({ 'status': 'Error' })
+        }
+        return res.json({ 'status': 'OK' })
+    })
+})
+
+app.get('**', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
+    // return res.redirect(`http://localhost:4000/?redirectroute=${req.path}`)
+    return res.redirect(`https://phonesoft.herokuapp.com/?redirectroute=${req.path}`)
+
 })
 
 server.listen(port)

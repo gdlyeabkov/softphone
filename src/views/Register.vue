@@ -5,8 +5,9 @@
   </div>  
 </template>
 <script>
+import * as jwt from 'jsonwebtoken'
 export default {
-  name: 'Home',
+  name: 'Register',
   data(){
     return {
       phone: ''
@@ -18,6 +19,7 @@ export default {
   methods: {
     createSocket(){
       let phone = this.phone
+      // fetch(`http://localhost:4000/create/?phonenumber=${phone}&socketid=#`, {
       fetch(`https://phonesoft.herokuapp.com/create/?phonenumber=${phone}&socketid=#`, {
         mode: 'cors',
         method: 'GET'
@@ -45,7 +47,12 @@ export default {
       })
       .then(async result => {
         console.log(JSON.parse(result))
-        window.location = `/sockets/?phone=${phone}`
+        let token = jwt.sign({ 'phonenumber': this.phone }, "phonesoftsecret", {})
+        window.localStorage.setItem("phonesofttoken", token)
+        
+        // window.location = `/sockets/?phone=${decoded.phonenumber}`
+        this.$router.push({ name: 'Sockets' })
+      
       })
     }
   }

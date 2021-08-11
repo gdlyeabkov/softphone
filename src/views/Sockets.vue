@@ -17,12 +17,14 @@
   </div>
 </template>
 <script>
+import * as jwt from 'jsonwebtoken'
 import io from 'socket.io-client'
 // const io = require("socket.io-client")
 export default {
   name: 'Home',
   data(){
     return {
+      token: '#',
       sockets: [],
       phone: '',
       cursorOfConnection: 0
@@ -43,6 +45,8 @@ export default {
     }
   },
   mounted(){
+    this.token = window.localStorage.getItem('phonesofttoken')
+
     // const socket = io()
     // socket.on('clientsocket', () => {
     //   console.log('clientsocket')
@@ -52,43 +56,97 @@ export default {
     //   socket.emit('clientsocket')
     // })
 
-    let phone = '+79254683410'
-    if(this.$route.query.phone === undefined || this.$route.query.phone === null){
-      phone = '+79254683410'
-    } else if(this.$route.query.phone !== undefined && this.$route.query.phone !== null){
-      phone = this.$route.query.phone
-    }
-    fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${phone}`, {
-        mode: 'cors',
-        method: 'GET'
-      }).then(response => response.body).then(rb  => {
-        const reader = rb.getReader()
-        return new ReadableStream({
-          start(controller) {
-            function push() {
-              reader.read().then( ({done, value}) => {
-                if (done) {
-                  console.log('done', done);
-                  controller.close();
-                  return;
-                }
-                controller.enqueue(value);
-                console.log(done, value);
-                push();
-              })
-            }
-            push();
+    // let phone = '+79254683410'
+    // if(this.$route.query.phone === undefined || this.$route.query.phone === null){
+    //   phone = '+79254683410'
+    // } else if(this.$route.query.phone !== undefined && this.$route.query.phone !== null){
+    //   phone = this.$route.query.phone
+    // }
+
+    if(this.$route.query.redirectroute !== null && this.$route.query.redirectroute !== undefined){
+      // логика перенаправления
+      if(this.$route.query.redirectroute.includes('register') || this.$route.query.redirectroute.includes('socket')){
+        this.$router.push({ path: this.$route.query.redirectroute })
+      } else if(!this.$route.query.redirectroute.includes('register')){     
+        jwt.verify(this.token, 'phonesoftsecret', (err, decoded) => {
+          if (err) {
+            this.$router.push({ name: "Register" })
+          } else {
+            // fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
+            fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${phone}`, {
+                mode: 'cors',
+                method: 'GET'
+              }).then(response => response.body).then(rb  => {
+                const reader = rb.getReader()
+                return new ReadableStream({
+                  start(controller) {
+                    function push() {
+                      reader.read().then( ({done, value}) => {
+                        if (done) {
+                          console.log('done', done);
+                          controller.close();
+                          return;
+                        }
+                        controller.enqueue(value);
+                        console.log(done, value);
+                        push();
+                      })
+                    }
+                    push();
+                  }
+                });
+            }).then(stream => {
+              return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+            })
+            .then(async result => {
+              console.log(JSON.parse(result))
+              this.sockets = JSON.parse(result).sockets
+              this.phone = JSON.parse(result).phone
+              this.cursorOfConnection = JSON.parse(result).cursorOfConnection
+            })
           }
-        });
-    }).then(stream => {
-      return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-    })
-    .then(async result => {
-      console.log(JSON.parse(result))
-      this.sockets = JSON.parse(result).sockets
-      this.phone = JSON.parse(result).phone
-      this.cursorOfConnection = JSON.parse(result).cursorOfConnection
-    })
+        })
+      }
+    } else if(this.$route.query.redirectroute === null || this.$route.query.redirectroute === undefined){
+      jwt.verify(this.token, 'phonesoftsecret', (err, decoded) => {
+        if (err) {
+          this.$router.push({ name: "Register" })
+        } else {
+          // fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
+          fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${phone}`, {
+              mode: 'cors',
+              method: 'GET'
+            }).then(response => response.body).then(rb  => {
+              const reader = rb.getReader()
+              return new ReadableStream({
+                start(controller) {
+                  function push() {
+                    reader.read().then( ({done, value}) => {
+                      if (done) {
+                        console.log('done', done);
+                        controller.close();
+                        return;
+                      }
+                      controller.enqueue(value);
+                      console.log(done, value);
+                      push();
+                    })
+                  }
+                  push();
+                }
+              });
+          }).then(stream => {
+            return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+          })
+          .then(async result => {
+            console.log(JSON.parse(result))
+            this.sockets = JSON.parse(result).sockets
+            this.phone = JSON.parse(result).phone
+            this.cursorOfConnection = JSON.parse(result).cursorOfConnection
+          })
+        }
+      })
+    }
   }
 }
 </script>
