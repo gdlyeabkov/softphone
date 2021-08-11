@@ -112,7 +112,7 @@ export default {
       jwt.verify(this.token, 'phonesoftsecret', (err, decoded) => {
         if (err) {
           this.$router.push({ name: "Register" })
-        } else {
+        } else { 
           // fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
           fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${decoded.phonenumber}`, {
               mode: 'same-origin',
