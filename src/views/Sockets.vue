@@ -67,7 +67,7 @@ export default {
       // логика перенаправления
       if(this.$route.query.redirectroute.includes('register') || this.$route.query.redirectroute.includes('socket')){
         this.$router.push({ path: this.$route.query.redirectroute })
-      } else if(!this.$route.query.redirectroute.includes('register')){     
+      } else {     
         this.$router.push({ name: "Sockets" })
         // jwt.verify(this.token, 'phonesoftsecret', (err, decoded) => {
         //   if (err) {
