@@ -123,6 +123,28 @@ app.use('/', [serveStatic(path.join(__dirname, '/dist')),
     }
 ])
 
+app.clean('/clean', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    // let indexOfSocket = sockets.indexOf(socket)
+    let indexOfSocket = req.query.cursorofconnection
+
+    sockets.splice(indexOfSocket, 1)
+    rooms.splice(indexOfSocket, 1)
+    phones.splice(indexOfSocket, 1)
+
+    if(io.sockets.adapter.rooms.size === 0){
+        cursorOfConnection = -1
+        sockets = []
+        rooms = []
+        phones = []
+    }
+    
+})
+
 app.get('/sockets', (req, res) => {
     
     res.setHeader('Access-Control-Allow-Origin', '*');
