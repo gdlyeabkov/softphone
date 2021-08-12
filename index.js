@@ -69,53 +69,57 @@ const SocketSchema = new mongoose.Schema({
 const SocketModel = mongoose.model('SocketModel', SocketSchema);
 
 app.use('/', [serveStatic(path.join(__dirname, '/dist')), (req, res, next) => {
-    indexConnection = 0
-    return next()
-}])
-
-io.on('connection', (socket) => {
-    indexConnection++
-    sockets.push(socket)
     
-    if(0 < indexConnection - 1){
-        sockets.pop()
-    }
-    if(Array.from(socket.rooms).length === indexConnection){
-        console.log(`--------------------------------------`)
-        sockets.map(socket => {
-            console.log(`sockets.id: ${socket.id}`)
-        })
-        console.log(`--------------------------------------`)
-        // sockets[sockets.length - 1].data.phone = req.params.room
-        socket.on('disconnect', function() {
-            let indexOfSocket = sockets.indexOf(socket)
-            sockets.splice(indexOfSocket, 1)
-            rooms.splice(indexOfSocket, 1)
-            phones.splice(indexOfSocket, 1)
-            
-            // cursorOfConnection--
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
-            if(io.sockets.adapter.rooms.size === 0){
-                console.log(`подчищаю сокеты`)
-                cursorOfConnection = -1
-                sockets = []
-                rooms = []
-                phones = []
-            }
-            console.log(`io.sockets.adapter.rooms.size: ${io.sockets.adapter.rooms.size}`)
-            console.log(`cursorOfConnection: ${cursorOfConnection}`)
-
+    io.on('connection', (socket) => {
+        indexConnection++
+        sockets.push(socket)
+        
+        if(0 < indexConnection - 1){
+            sockets.pop()
+        }
+        if(Array.from(socket.rooms).length === indexConnection){
             console.log(`--------------------------------------`)
             sockets.map(socket => {
                 console.log(`sockets.id: ${socket.id}`)
             })
-            rooms.map((room, roomIndex) => {
-                console.log(`rooms[${roomIndex}]: ${rooms[roomIndex]}`)
-            })
             console.log(`--------------------------------------`)
-        })
-    }
-})
+            // sockets[sockets.length - 1].data.phone = req.params.room
+            socket.on('disconnect', function() {
+                let indexOfSocket = sockets.indexOf(socket)
+                sockets.splice(indexOfSocket, 1)
+                rooms.splice(indexOfSocket, 1)
+                phones.splice(indexOfSocket, 1)
+                
+                // cursorOfConnection--
+    
+                if(io.sockets.adapter.rooms.size === 0){
+                    console.log(`подчищаю сокеты`)
+                    cursorOfConnection = -1
+                    sockets = []
+                    rooms = []
+                    phones = []
+                }
+                console.log(`io.sockets.adapter.rooms.size: ${io.sockets.adapter.rooms.size}`)
+                console.log(`cursorOfConnection: ${cursorOfConnection}`)
+    
+                console.log(`--------------------------------------`)
+                sockets.map(socket => {
+                    console.log(`sockets.id: ${socket.id}`)
+                })
+                rooms.map((room, roomIndex) => {
+                    console.log(`rooms[${roomIndex}]: ${rooms[roomIndex]}`)
+                })
+                console.log(`--------------------------------------`)
+            })
+        }
+    })    
+    return next()
+}])
 
 app.get('/clean', (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -169,9 +173,9 @@ app.get('/sockets', (req, res) => {
 const port = process.env.PORT || 8080
 // const port = 4000
 
-io.on('connection', (socket) => {
-    console.log("connection")
-})
+// io.on('connection', (socket) => {
+//     console.log("connection")
+// })
 
 app.get('/video', async (req, res)=>{
     res.setHeader('Access-Control-Allow-Origin', '*');
