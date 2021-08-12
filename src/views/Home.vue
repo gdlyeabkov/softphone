@@ -34,35 +34,35 @@ socket.on("connect", () => {
 })
 
 socket.on("disconnect", () => {
-  console.log('подчищаю сокеты')
-  fetch(`https://phonesoft.herokuapp.com/clean/?cursorofconnection=${this.cursorOfConnection}`, {
-    mode: 'cors',
-    method: 'GET'
-  }).then(response => response.body).then(rb  => {
-    const reader = rb.getReader()
-    return new ReadableStream({
-      start(controller) {
-        function push() {
-          reader.read().then( ({done, value}) => {
-            if (done) {
-              console.log('done', done);
-              controller.close();
-              return;
-            }
-            controller.enqueue(value);
-            console.log(done, value);
-            push();
-          })
-        }
-        push();
-      }
-    });
-  }).then(stream => {
-    return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-  })
-  .then(async result => {
+  // console.log('подчищаю сокеты')
+  // fetch(`https://phonesoft.herokuapp.com/clean/?cursorofconnection=${this.cursorOfConnection}`, {
+  //   mode: 'cors',
+  //   method: 'GET'
+  // }).then(response => response.body).then(rb  => {
+  //   const reader = rb.getReader()
+  //   return new ReadableStream({
+  //     start(controller) {
+  //       function push() {
+  //         reader.read().then( ({done, value}) => {
+  //           if (done) {
+  //             console.log('done', done);
+  //             controller.close();
+  //             return;
+  //           }
+  //           controller.enqueue(value);
+  //           console.log(done, value);
+  //           push();
+  //         })
+  //       }
+  //       push();
+  //     }
+  //   });
+  // }).then(stream => {
+  //   return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+  // })
+  // .then(async result => {
     
-  })
+  // })
 })
 
 socket.on("error", (error) => {
@@ -238,35 +238,35 @@ export default {
       })
 
       window.addEventListener('close', (event) => {
-        console.log('подчищаю сокеты')
-        fetch(`https://phonesoft.herokuapp.com/clean/?cursorofconnection=${this.cursorOfConnection}`, {
-          mode: 'cors',
-          method: 'GET'
-        }).then(response => response.body).then(rb  => {
-          const reader = rb.getReader()
-          return new ReadableStream({
-            start(controller) {
-              function push() {
-                reader.read().then( ({done, value}) => {
-                  if (done) {
-                    console.log('done', done);
-                    controller.close();
-                    return;
-                  }
-                  controller.enqueue(value);
-                  console.log(done, value);
-                  push();
-                })
-              }
-              push();
-            }
-          });
-        }).then(stream => {
-          return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-        })
-        .then(async result => {
+        // console.log('подчищаю сокеты')
+        // fetch(`https://phonesoft.herokuapp.com/clean/?cursorofconnection=${this.cursorOfConnection}`, {
+        //   mode: 'cors',
+        //   method: 'GET'
+        // }).then(response => response.body).then(rb  => {
+        //   const reader = rb.getReader()
+        //   return new ReadableStream({
+        //     start(controller) {
+        //       function push() {
+        //         reader.read().then( ({done, value}) => {
+        //           if (done) {
+        //             console.log('done', done);
+        //             controller.close();
+        //             return;
+        //           }
+        //           controller.enqueue(value);
+        //           console.log(done, value);
+        //           push();
+        //         })
+        //       }
+        //       push();
+        //     }
+        //   });
+        // }).then(stream => {
+        //   return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+        // })
+        // .then(async result => {
           
-        })
+        // })
       })
 
     })
