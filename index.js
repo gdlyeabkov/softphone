@@ -33,10 +33,12 @@ var cursorOfConnection = -1
 var indexConnection = 0
 var peerIndex = 0
 var lastpeer = ''
+var countClientsInPeer = 0
 
 peerServer.on('connection', (client) => {
     console.log(`client: ${client.id}`)  
     lastpeer = client.id
+    countClientsInPeer++
 })
 
 peerServer.on('disconnect', (client) => {
@@ -47,6 +49,10 @@ peerServer.on('disconnect', (client) => {
         sockets = []
         rooms = []
         phones = []
+    }
+    countClientsInPeer--
+    if(countClientsInPeer === 0){
+        cursorOfConnection = -1
     }
 })
 app.use('/peerjs', peerServer)
@@ -171,9 +177,11 @@ app.get('/sockets', (req, res) => {
         })
         
         // return res.json({ 'sockets': allSockets, 'phone': req.query.phone })
-        if(io.sockets.adapter.rooms.size === 1){
-            cursorOfConnection = -1
-        }
+        
+        // if(io.sockets.adapter.rooms.size <= 1){
+        //     cursorOfConnection = -1
+        // }
+        
         cursorOfConnection++
         return res.json({ 'sockets': allSockets, 'phone': req.query.phone, cursorOfConnection: cursorOfConnection })
 
