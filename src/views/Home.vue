@@ -148,10 +148,11 @@ export default {
         this.roomId = this.$route.params.room
 
         peer = new Peer(undefined, {
-          'secure': true,
-          'path': '/peerjs',
-          'host': 'https://phonesoft.herokuapp.com',
-          'port': ""
+          path: '/peerjs',
+          host: 'https://phonesoft.herokuapp.com',
+          secure: true,
+          port: this.port,
+          key: 'mypeerjsfreeapikey'
         })
 
         peer.on('open', (id) => {
