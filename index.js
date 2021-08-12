@@ -12,8 +12,7 @@ const cors = require('cors')
 
 const { ExpressPeerServer } = require('peer')
 const peerServer = ExpressPeerServer(server, {
-    debug: true,
-    path: '/'
+    debug: true
 })
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));

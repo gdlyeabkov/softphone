@@ -151,8 +151,7 @@ export default {
           path: '/peerjs',
           host: 'phonesoft.herokuapp.com',
           secure: true,
-          port: this.port,
-          key: 'mypeerjsfreeapikey'
+          port: this.port
         })
 
         peer.on('open', (id) => {
