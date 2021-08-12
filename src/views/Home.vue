@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <div style="display: flex; flex-direction: row; justify-content: center;">
-      <video id="myvideo" width="650px;" controls>
+  <div style="min-width: 100%;">
+    <div style="width: 100%; display: flex; flex-direction: row; justify-content: center;">
+      <video id="myvideo" style="margin: 15px; height: 450px; min-width: 65%;" controls>
         
       </video>
     </div>
@@ -16,6 +16,9 @@
       <label @click="sendMessage()" class="material-icons" for="sendButton" style="font-size: 28px; cursor: pointer; color: white;">
         send
       </label>
+    </div>
+    <div style="" class="socketMessages">
+      
     </div>
   </div>  
 </template>
@@ -88,6 +91,7 @@ socket.on('sendMessage', (message, color) => {
   `
   msg.textContent = message
   document.body.appendChild(msg)
+  // document.querySelector('.socketMessages').appendChild(msg)
 })
 
 
