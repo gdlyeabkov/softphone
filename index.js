@@ -41,12 +41,7 @@ peerServer.on('connection', (client) => {
 
 peerServer.on('disconnect', (client) => {
     console.log(`client: ${client.id}`)
-    let indexOfSocket = req.query.cursorofconnection
-
-    sockets.splice(indexOfSocket, 1)
-    rooms.splice(indexOfSocket, 1)
-    phones.splice(indexOfSocket, 1)
-
+    
     if(io.sockets.adapter.rooms.size === 0){
         cursorOfConnection = -1
         sockets = []
