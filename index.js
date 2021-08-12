@@ -44,15 +44,19 @@ peerServer.on('connection', (client) => {
 peerServer.on('disconnect', (client) => {
     console.log(`client: ${client.id}`)
     
-    if(io.sockets.adapter.rooms.size === 0){
+    // if(io.sockets.adapter.rooms.size === 0){
+    //     cursorOfConnection = -1
+    //     sockets = []
+    //     rooms = []
+    //     phones = []
+    // }
+
+    countClientsInPeer--
+    if(countClientsInPeer === 0){
         cursorOfConnection = -1
         sockets = []
         rooms = []
         phones = []
-    }
-    countClientsInPeer--
-    if(countClientsInPeer === 0){
-        cursorOfConnection = -1
     }
 })
 app.use('/peerjs', peerServer)
@@ -110,13 +114,14 @@ app.use('/', [serveStatic(path.join(__dirname, '/dist')), (req, res, next) => {
                 
                 // cursorOfConnection--
     
-                if(io.sockets.adapter.rooms.size === 0){
-                    console.log(`подчищаю сокеты`)
-                    cursorOfConnection = -1
-                    sockets = []
-                    rooms = []
-                    phones = []
-                }
+                // if(io.sockets.adapter.rooms.size === 0){
+                //     console.log(`подчищаю сокеты`)
+                //     cursorOfConnection = -1
+                //     sockets = []
+                //     rooms = []
+                //     phones = []
+                // }
+                
                 console.log(`io.sockets.adapter.rooms.size: ${io.sockets.adapter.rooms.size}`)
                 console.log(`cursorOfConnection: ${cursorOfConnection}`)
     
