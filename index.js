@@ -171,6 +171,9 @@ app.get('/sockets', (req, res) => {
         })
         
         // return res.json({ 'sockets': allSockets, 'phone': req.query.phone })
+        if(io.sockets.adapter.rooms.size === 1){
+            cursorOfConnection = -1
+        }
         cursorOfConnection++
         return res.json({ 'sockets': allSockets, 'phone': req.query.phone, cursorOfConnection: cursorOfConnection })
 
