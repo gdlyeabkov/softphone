@@ -123,7 +123,7 @@ app.use('/', [serveStatic(path.join(__dirname, '/dist')),
     }
 ])
 
-app.clean('/clean', (req, res) => {
+app.get('/clean', (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
