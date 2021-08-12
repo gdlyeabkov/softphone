@@ -142,100 +142,133 @@ export default {
     
   },
   mounted(){
-      // fetch(`http://localhost:4000/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
-      fetch(`https://phonesoft.herokuapp.com/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
-        mode: 'cors',
-        method: 'GET'
-      }).then(response => response.body).then(rb  => {
-        const reader = rb.getReader()
-        return new ReadableStream({
-          start(controller) {
-            function push() {
-              reader.read().then( ({done, value}) => {
-                if (done) {
-                  
-                  controller.close();
-                  return;
-                }
-                controller.enqueue(value);
+    // fetch(`http://localhost:4000/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
+    fetch(`https://phonesoft.herokuapp.com/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
+      mode: 'cors',
+      method: 'GET'
+    }).then(response => response.body).then(rb  => {
+      const reader = rb.getReader()
+      return new ReadableStream({
+        start(controller) {
+          function push() {
+            reader.read().then( ({done, value}) => {
+              if (done) {
                 
-                push();
-              })
-            }
-            push();
-          }
-        });
-    }).then(stream => {
-        return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-      })
-      .then(async result => {
-        console.log(JSON.parse(result))
-        this.randomcolor = Math.floor(Math.random() * this.colors.length)
-        this.mycolor = this.colors[this.randomcolor]
-        this.peerIndex = JSON.parse(result).peerindex
-        this.port =  JSON.parse(result).port
-        this.mystream = null
-        this.peerId = JSON.parse(result).peer
-        
-        this.cursorOfConnection = this.$route.query.cursorofconnection
-        this.roomId = this.$route.params.room
-
-        peer = new Peer(undefined, {
-          path: '/peerjs',
-          host: 'phonesoft.herokuapp.com',
-          secure: true,
-          port: this.port
-        })
-
-        peer.on('open', (id) => {
-          let devices = []
-          let permissions = {
-            audio: false,
-            video: false
-          }
-          navigator.mediaDevices.enumerateDevices().then(listOfDevices => {
-            devices = listOfDevices
-            for(let device of devices){
-              if(device.kind.includes('audioinput')){
-                permissions.audio = true
-                break
+                controller.close();
+                return;
               }
-            }
-            for(let device of devices){
-              if(device.kind.includes('videoinput')){
-                permissions.video = true
-                break
-              }
-            }
-            navigator.mediaDevices.getUserMedia(permissions).then((stream) => {
-              if(this.peerIndex === 2){
-                this.mystream = peer.call(this.peerId, stream)
-              }
-              window.localStream = stream
-            }).catch(e => {
+              controller.enqueue(value);
               
+              push();
             })
-            
+          }
+          push();
+        }
+      });
+  }).then(stream => {
+      return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+    })
+    .then(async result => {
+      console.log(JSON.parse(result))
+      this.randomcolor = Math.floor(Math.random() * this.colors.length)
+      this.mycolor = this.colors[this.randomcolor]
+      this.peerIndex = JSON.parse(result).peerindex
+      this.port =  JSON.parse(result).port
+      this.mystream = null
+      this.peerId = JSON.parse(result).peer
+      
+      this.cursorOfConnection = this.$route.query.cursorofconnection
+      this.roomId = this.$route.params.room
+
+      peer = new Peer(undefined, {
+        path: '/peerjs',
+        host: 'phonesoft.herokuapp.com',
+        secure: true,
+        port: this.port
+      })
+
+      peer.on('open', (id) => {
+        let devices = []
+        let permissions = {
+          audio: false,
+          video: false
+        }
+        navigator.mediaDevices.enumerateDevices().then(listOfDevices => {
+          devices = listOfDevices
+          for(let device of devices){
+            if(device.kind.includes('audioinput')){
+              permissions.audio = true
+              break
+            }
+          }
+          for(let device of devices){
+            if(device.kind.includes('videoinput')){
+              permissions.video = true
+              break
+            }
+          }
+          navigator.mediaDevices.getUserMedia(permissions).then((stream) => {
+            if(this.peerIndex === 2){
+              this.mystream = peer.call(this.peerId, stream)
+            }
+            window.localStream = stream
           }).catch(e => {
             
           })
+          
+        }).catch(e => {
+          
         })
+      })
 
-        peer.on('call', (call) => {
-          call.answer()
-          call.on('stream', (userVideoStream) => {
-            document.querySelector('#myvideo').srcObject = userVideoStream
-            document.querySelector('#myvideo').addEventListener('loadedmetadata', () => {
-              document.querySelector('#myvideo').play()
-            })
-            
+      peer.on('call', (call) => {
+        call.answer()
+        call.on('stream', (userVideoStream) => {
+          document.querySelector('#myvideo').srcObject = userVideoStream
+          document.querySelector('#myvideo').addEventListener('loadedmetadata', () => {
+            document.querySelector('#myvideo').play()
           })
+          
         })
-      
+      })
+    
       socket.on('alertMessage', (message) => {
         console.log(`alertMessage: ${message}`)
         alert(message)
       })
+
+      window.addEventListener('close', (event) => {
+        console.log('подчищаю сокеты')
+        fetch(`https://phonesoft.herokuapp.com/clean/?cursorofconnection=${this.cursorOfConnection}`, {
+          mode: 'cors',
+          method: 'GET'
+        }).then(response => response.body).then(rb  => {
+          const reader = rb.getReader()
+          return new ReadableStream({
+            start(controller) {
+              function push() {
+                reader.read().then( ({done, value}) => {
+                  if (done) {
+                    console.log('done', done);
+                    controller.close();
+                    return;
+                  }
+                  controller.enqueue(value);
+                  console.log(done, value);
+                  push();
+                })
+              }
+              push();
+            }
+          });
+        }).then(stream => {
+          return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+        })
+        .then(async result => {
+          
+        })
+      })
+
     })
   },
   methods: {
