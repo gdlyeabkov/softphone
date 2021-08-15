@@ -7,8 +7,8 @@
     <br style="clear: both;"/>
     <hr />
     <div v-if="sockets.length !== 0">
-      <div v-for="socket in sockets" :key="socket._id">
-        <button @click="goToRoom(socket.phone, phone)" class="btn btn-primary" style="margin: 15px; clear: both; margin-top: 10px; min-width: 350px; min-height: 100px;">{{ socket.phone }}</button>
+      <div style="display: flex; justify-content: center; max-width: 100%; overflow: hidden;" v-for="socket in sockets" :key="socket._id">
+        <button @click="goToRoom(socket.phone, phone)" class="btn btn-primary" style="margin: 15px; clear: both; margin-top: 10px; min-width: 250px; min-height: 100px;">{{ socket.phone }}</button>
       </div>
     </div>
     <div v-else-if="sockets.length === 0">
