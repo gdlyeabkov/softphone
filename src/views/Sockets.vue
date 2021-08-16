@@ -113,8 +113,8 @@ export default {
         if (err) {
           this.$router.push({ name: "Register" })
         } else { 
-          // fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
-          fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${decoded.phonenumber}`, {
+          fetch(`http://localhost:4000/sockets/?phone=${decoded.phonenumber}`, {
+          // fetch(`https://phonesoft.herokuapp.com/sockets/?phone=${decoded.phonenumber}`, {
               mode: 'cors',
               method: 'GET'
             }).then(response => response.body).then(rb  => {

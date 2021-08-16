@@ -14,14 +14,15 @@ const { ExpressPeerServer } = require('peer')
 const peerServer = ExpressPeerServer(server, {
     debug: true
 })
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
-app.use(
-    cors({
-        origin: "https://phonesoft.com",
-        optionsSuccessStatus: 200
-    })
-)
+
+// app.use(express.json());
+// app.use(express.urlencoded({extended: false}));
+// app.use(
+//     cors({
+//         origin: "https://phonesoft.com",
+//         optionsSuccessStatus: 200
+//     })
+// )
 
 // const PeerServer = require('peer').PeerServer
 
@@ -91,32 +92,31 @@ io.on('connection', (socket) => {
     indexConnection++
     sockets.push(socket)
     
+    // if(0 < indexConnection - 1){
+    //     sockets.pop()
+    // }
+
     if(0 < indexConnection - 1){
-        sockets.pop()
+        indexConnection--
     }
+
     if(Array.from(socket.rooms).length === indexConnection){
         console.log(`--------------------------------------`)
         sockets.map(socket => {
             console.log(`sockets.id: ${socket.id}`)
         })
         console.log(`--------------------------------------`)
-        // sockets[sockets.length - 1].data.phone = req.params.room
         socket.on('disconnect', function() {
+            
             let indexOfSocket = sockets.indexOf(socket)
             sockets.splice(indexOfSocket, 1)
             rooms.splice(indexOfSocket, 1)
             phones.splice(indexOfSocket, 1)
             
-            // cursorOfConnection--
+            if(sockets.length === 0){
+                cursorOfConnection = -1
+            }
 
-            // if(io.sockets.adapter.rooms.size === 0){
-            //     console.log(`подчищаю сокеты`)
-            //     cursorOfConnection = -1
-            //     sockets = []
-            //     rooms = []
-            //     phones = []
-            // }
-            
             console.log(`io.sockets.adapter.rooms.size: ${io.sockets.adapter.rooms.size}`)
             console.log(`cursorOfConnection: ${cursorOfConnection}`)
 

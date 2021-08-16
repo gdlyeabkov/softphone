@@ -23,10 +23,6 @@
   </div>  
 </template>
 <script>
-// const socket = io({
-//   path: "/myownpath"
-// })
-// const socket = io('/')
 const socket = io()
 
 var isSender = false
@@ -34,38 +30,6 @@ var peer = null
 
 socket.on("connect", () => {
   console.log("connect")
-})
-
-socket.on("disconnect", () => {
-  // console.log('подчищаю сокеты')
-  // fetch(`https://phonesoft.herokuapp.com/clean/?cursorofconnection=${this.cursorOfConnection}`, {
-  //   mode: 'cors',
-  //   method: 'GET'
-  // }).then(response => response.body).then(rb  => {
-  //   const reader = rb.getReader()
-  //   return new ReadableStream({
-  //     start(controller) {
-  //       function push() {
-  //         reader.read().then( ({done, value}) => {
-  //           if (done) {
-  //             console.log('done', done);
-  //             controller.close();
-  //             return;
-  //           }
-  //           controller.enqueue(value);
-  //           console.log(done, value);
-  //           push();
-  //         })
-  //       }
-  //       push();
-  //     }
-  //   });
-  // }).then(stream => {
-  //   return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-  // })
-  // .then(async result => {
-    
-  // })
 })
 
 socket.on("error", (error) => {
@@ -91,7 +55,6 @@ socket.on('sendMessage', (message, color) => {
   `
   msg.textContent = message
   document.body.appendChild(msg)
-  // document.querySelector('.socketMessages').appendChild(msg)
 })
 
 
@@ -146,8 +109,8 @@ export default {
     
   },
   mounted(){
-    // fetch(`http://localhost:4000/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
-    fetch(`https://phonesoft.herokuapp.com/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
+    fetch(`http://localhost:4000/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
+    // fetch(`https://phonesoft.herokuapp.com/room/${this.$route.params.room}/?phone=${this.$route.query.phone}`, {
       mode: 'cors',
       method: 'GET'
     }).then(response => response.body).then(rb  => {
@@ -186,7 +149,7 @@ export default {
 
       peer = new Peer(undefined, {
         path: '/peerjs',
-        host: 'phonesoft.herokuapp.com',
+        host: 'localhost',
         secure: true,
         port: 443
       })
@@ -240,45 +203,12 @@ export default {
         console.log(`alertMessage: ${message}`)
         alert(message)
       })
-
-      window.addEventListener('close', (event) => {
-        // console.log('подчищаю сокеты')
-        // fetch(`https://phonesoft.herokuapp.com/clean/?cursorofconnection=${this.cursorOfConnection}`, {
-        //   mode: 'cors',
-        //   method: 'GET'
-        // }).then(response => response.body).then(rb  => {
-        //   const reader = rb.getReader()
-        //   return new ReadableStream({
-        //     start(controller) {
-        //       function push() {
-        //         reader.read().then( ({done, value}) => {
-        //           if (done) {
-        //             console.log('done', done);
-        //             controller.close();
-        //             return;
-        //           }
-        //           controller.enqueue(value);
-        //           console.log(done, value);
-        //           push();
-        //         })
-        //       }
-        //       push();
-        //     }
-        //   });
-        // }).then(stream => {
-        //   return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-        // })
-        // .then(async result => {
-          
-        // })
-      })
-
     })
   },
   methods: {
     requestVideoStream(){
-      // fetch(`http://localhost:4000/video/?phone=${this.$route.query.phone}`, {
-      fetch(`https://phonesoft.herokuapp.com/video/?phone=${this.$route.query.phone}`, {
+      fetch(`http://localhost:4000/video/?phone=${this.$route.query.phone}`, {
+      // fetch(`https://phonesoft.herokuapp.com/video/?phone=${this.$route.query.phone}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
@@ -312,8 +242,8 @@ export default {
       isSender = true
       let mainMessage = this.textarea
 
-      // fetch(`http://localhost:4000/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
-      fetch(`https://phonesoft.herokuapp.com/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
+      fetch(`http://localhost:4000/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
+      // fetch(`https://phonesoft.herokuapp.com/send?message=${mainMessage}&msgcolor=${mycolor}&phone=${this.$route.query.phone}&room=${this.$route.params.room}&cursorofconnection=${this.$route.query.cursorofconnection}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
