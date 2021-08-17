@@ -326,9 +326,11 @@ app.get('/send', async (req, res) => {
     // io.emit('sendMessage', req.query.message, req.query.msgcolor)
     let idxConnection = rooms.findIndex(
         (el, index, array) => {
-            if(el === req.query.phone){
+            if(el === req.query.phone && req.query.room in phones){
                 return true
             } else if(el !== req.query.phone){
+                return false
+            } else {
                 return false
             }
         }
@@ -346,7 +348,9 @@ app.get('/send', async (req, res) => {
             }
         )
         console.log(`idxAlertConnection: ${idxAlertConnection}`)
-        io.to(sockets[idxAlertConnection].id).emit('alertMessage', req.query.message)
+        if(idxAlertConnection >= 0){
+            io.to(sockets[idxAlertConnection].id).emit('alertMessage', req.query.message)
+        }
     }
     return res.json({ status: "OK" })
 })
