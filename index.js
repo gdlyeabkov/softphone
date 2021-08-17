@@ -304,20 +304,24 @@ app.get('/send', async (req, res) => {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     
     console.log(`req.query: ${Object.keys(req.query)}`)
-    console.log(`req.query: ${req.query.message}`)
-    console.log(`req.query: ${req.query.msgcolor}`)
-    console.log(`req.query: ${req.query.phone}`)
-    console.log(`req.query: ${req.query.room}`)
-    console.log(`req.query: ${req.query.cursorofconnection}`)
+    console.log(`req.query.message: ${req.query.message}`)
+    console.log(`req.query.msgcolor: ${req.query.msgcolor}`)
+    console.log(`req.query.phone: ${req.query.phone}`)
+    console.log(`req.query.room: ${req.query.room}`)
+    console.log(`req.query,cursorofconnection: ${req.query.cursorofconnection}`)
     console.log(`req.query.phone: ${req.query.phone}`)
     console.log(`rooms: ${rooms}`)
     console.log(`phones: ${phones}`)
-    console.log(`index: ${rooms.findIndex(
+    console.log(`idxConnection: ${rooms.findIndex(
         (el, index, array) => {
-            if(el === req.query.phone){
+            if(el === req.query.phone && phones.some(phone => {
+                return phone === req.query.room
+            })){
                 console.log(`el: ${el}`)
                 return true
             } else if(el !== req.query.phone){
+                return false
+            } else {
                 return false
             }
         }
@@ -326,7 +330,9 @@ app.get('/send', async (req, res) => {
     // io.emit('sendMessage', req.query.message, req.query.msgcolor)
     let idxConnection = rooms.findIndex(
         (el, index, array) => {
-            if(el === req.query.phone && req.query.room in phones){
+            if(el === req.query.phone && phones.some(phone => {
+                return phone === req.query.room
+            })){
                 return true
             } else if(el !== req.query.phone){
                 return false
